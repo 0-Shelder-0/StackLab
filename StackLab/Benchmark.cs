@@ -1,18 +1,22 @@
 using System.Collections.Generic;
 using System.IO;
+using StackLab.Interfaces;
 
 namespace StackLab
 {
-    public class Benchmark
+    public static class Benchmark
     {
-        public static void Run(IEnumerable<string> paths)
+        public static void Run(IEnumerable<string> paths,
+                               IInterpreter<string> interpreter,
+                               Stream programOutput,
+                               FileStream resultOutput)
         {
-            var measurer = new Measurer();
             foreach (var path in paths)
             {
-                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                using (var input = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
-                    measurer.Measure();
+                    var timeSpan = Measurer.Measure(input, programOutput, interpreter);
+                    resultOutput.StreamWriteLine($"{resultOutput.Name}: {timeSpan}");
                 }
             }
         }

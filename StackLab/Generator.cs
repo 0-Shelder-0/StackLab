@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using StackLab.Interfaces;
 
@@ -17,37 +18,28 @@ namespace StackLab
             {
                 if (number == 1)
                 {
-                    stringBuilder.Append($"1,{GeneratePushParameters(rnd, rnd.Next(1, 2))} ");
+                    stringBuilder.Append($"1,{GeneratePushParameters(rnd, rnd.Next(1, 3))} ");
                 }
                 else
                 {
                     stringBuilder.Append($"{number} ");
                 }
             }
-            
+
             return stringBuilder.ToString();
         }
 
-        private List<int> GenerateOperationNumbers(int operationsCount, Random rnd)
+        private IEnumerable<int> GenerateOperationNumbers(int operationsCount, Random rnd)
         {
-            var operationsList = new List<int>();
-            for (var i = 0; i < operationsCount; i++)
-            {
-                operationsList.Add(rnd.Next(1, 5));
-            }
-            return operationsList;
+            return Enumerable.Range(0, operationsCount)
+                             .Select(value => rnd.Next(1, 5));
         }
 
         private string GeneratePushParameters(Random rnd, int numberParameter)
         {
-            if (numberParameter == 1)
-            {
-                return GenerateString(rnd);
-            }
-            else
-            {
-                return GenerateNumber(rnd).ToString();
-            }
+            return numberParameter == 1
+                       ? GenerateString(rnd)
+                       : GenerateNumber(rnd).ToString();
         }
 
         private string GenerateString(Random rnd)
@@ -63,7 +55,7 @@ namespace StackLab
 
         private int GenerateNumber(Random rnd)
         {
-            return rnd.Next(0, int.MaxValue);
+            return rnd.Next(0, 1000000);
         }
     }
 }

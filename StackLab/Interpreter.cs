@@ -7,7 +7,7 @@ using StackLab.Interfaces;
 
 namespace StackLab
 {
-    public class Interpreter
+    public class Interpreter : IInterpreter<string>
     {
         private readonly Dictionary<string, Func<IStack<string>, string, string>> _dictionaryFunc =
             new Dictionary<string, Func<IStack<string>, string, string>>
@@ -24,24 +24,29 @@ namespace StackLab
                 ["5"] = (stack, command) => stack.Print()
             };
 
-        public void Run(string program, IStack<string> stack, Stream output)
+        public void Run(Stream input, Stream output, IStack<string> stack)
         {
-            var commands = program.Split().Where(x => x.Length > 0).ToArray();
+            var bytes = new byte[input.Length];
+            var commands = GetCommands(bytes);
             for (var i = 1; i <= commands.Length; i++)
             {
                 var operation = commands[i].Split(',').FirstOrDefault();
                 if (!_dictionaryFunc.ContainsKey(operation))
                 {
-                    WriteText(output, $"Line {i} undexpected token: {commands[i]}");
+                    output.StreamWriteLine($"Line {i} undexpected token: {commands[i]}");
                     break;
                 }
-                WriteText(output, _dictionaryFunc[operation](stack, commands[i]));
+                output.StreamWriteLine(_dictionaryFunc[operation](stack, commands[i]));
             }
         }
 
-        private static void WriteText(Stream stream, string str)
+        private static string[] GetCommands(byte[] bytes)
         {
-            stream.Write(Encoding.Default.GetBytes($"{str}\r\n"));
+            return Encoding.Default
+                           .GetString(bytes)
+                           .Split()
+                           .Where(x => x.Length > 0)
+                           .ToArray();
         }
     }
 }
