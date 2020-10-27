@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using StackLab.Interfaces;
 
-namespace StackLab
+namespace StackLab.Interpreters
 {
     public class Interpreter : IInterpreter<string>
     {

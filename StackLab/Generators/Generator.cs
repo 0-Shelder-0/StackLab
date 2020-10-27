@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using StackLab.Interfaces;
 
-namespace StackLab
+namespace StackLab.Generators
 {
     public class Generator : IGenerator
     {
