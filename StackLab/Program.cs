@@ -1,8 +1,8 @@
 ﻿namespace StackLab
 {
-    class Program
+    static class Program
     {
-        static void Main()
+        private static void Main()
         {
             
         }
