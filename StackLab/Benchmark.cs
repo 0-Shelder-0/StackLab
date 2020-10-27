@@ -16,7 +16,7 @@ namespace StackLab
                 using (var input = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
                     var timeSpan = Measurer.Measure(input, programOutput, interpreter);
-                    resultOutput.StreamWriteLine($"{resultOutput.Name}: {timeSpan}");
+                    resultOutput.StreamWriteLine($"{path}: {timeSpan}");
                 }
             }
         }

@@ -10,13 +10,18 @@ namespace StackLab
         public static TimeSpan Measure(Stream input, Stream output, IInterpreter<string> interpreter)
         {
             var stopwatch = new Stopwatch();
-            var stack = new Stack<string>();
+            var result = string.Empty;
 
             stopwatch.Start();
-            interpreter.Run(input, output, stack);
+            for (var i = 0; i < 3; i++)
+            {
+                result = interpreter.Run(input, new Stack<string>());
+            }
             stopwatch.Stop();
 
-            return stopwatch.Elapsed;
+            output.StreamWrite(result);
+
+            return stopwatch.Elapsed / 3;
         }
     }
 }

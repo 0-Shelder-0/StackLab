@@ -51,7 +51,7 @@ namespace StackLab
 
         public T Top()
         {
-            return _tail.Value;
+            return _count == 0 ? default : _tail.Value;
         }
 
         public bool IsEmpty()

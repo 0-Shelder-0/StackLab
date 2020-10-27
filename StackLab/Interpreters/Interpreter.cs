@@ -9,8 +9,9 @@ namespace StackLab.Interpreters
 {
     public class Interpreter : IInterpreter<string>
     {
-        public void Run(Stream input, Stream output, IStack<string> stack)
+        public string Run(Stream input, IStack<string> stack)
         {
+            var strBuilder = new StringBuilder();
             var bytes = new byte[input.Length];
             input.Read(bytes);
             var commands = GetCommands(bytes);
@@ -19,11 +20,12 @@ namespace StackLab.Interpreters
                 var operation = commands[i].Split(',').FirstOrDefault();
                 if (!_dictionaryFunc.ContainsKey(operation))
                 {
-                    output.StreamWriteLine($"Line {i + 1} undexpected token: {commands[i]}");
+                    strBuilder.AppendLine($"Line {i + 1} undexpected token: '{commands[i]}'");
                     break;
                 }
-                output.StreamWriteLine(_dictionaryFunc[operation](stack, commands[i]));
+                strBuilder.AppendLine(_dictionaryFunc[operation](stack, commands[i]));
             }
+            return strBuilder.ToString();
         }
 
         private readonly Dictionary<string, Func<IStack<string>, string, string>> _dictionaryFunc =
