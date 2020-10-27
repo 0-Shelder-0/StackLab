@@ -4,6 +4,6 @@ namespace StackLab.Interfaces
 {
     public interface IGenerator
     {
-        string Generate(int operationCount);
+        string Generate(int operationsCount);
     }
 }
