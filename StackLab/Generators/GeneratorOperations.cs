@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using StackLab.Interfaces;
 
@@ -69,17 +70,13 @@ namespace StackLab.Generators
         private List<string> GenerateVariablesValues(Random rnd, List<string> valuesList)
         {
             var variables = new HashSet<string>();
-
-            foreach (var value in valuesList)
-            {
-                if (!int.TryParse(value, out _))
-                {
-                    variables.Add(value);
-                }
-            }
-
             var stringBuilder = new StringBuilder();
             var resultList = new List<string>();
+
+            foreach (var value in valuesList.Where(value => !int.TryParse(value, out _)))
+            {
+                variables.Add(value);
+            }
 
             foreach (var variable in variables)
             {
