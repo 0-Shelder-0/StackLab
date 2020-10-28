@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using StackLab.Interfaces;
 
@@ -58,9 +59,19 @@ namespace StackLab.Generators
             var resultString = new StringBuilder();
             for (var i = 0; i < valuesList.Count; i++)
             {
-                resultString.Append(i == valuesList.Count - 1
-                                        ? $"{valuesList[i]}"
-                                        : $"{valuesList[i]}{_funcDictionary[rnd.Next(1, 10)]}");
+                var levelFunc = rnd.Next(1, 3); // 1 - complete, 2 - simple
+                if (levelFunc == 1)
+                {
+                    resultString.Append(i != valuesList.Count - 1
+                                            ? $"{_funcDictionary[rnd.Next(6, 10)]}{valuesList[i]}{_funcDictionary[rnd.Next(1, 6)]}"
+                                            : $"{_funcDictionary[rnd.Next(6, 10)]}{valuesList[i]}");
+                }
+                else
+                {
+                    resultString.Append(i != valuesList.Count - 1
+                                            ? $"{valuesList[i]}{_funcDictionary[rnd.Next(1, 6)]}"
+                                            : $"{valuesList[i]}");
+                }
             }
 
             return resultString.ToString();
@@ -72,12 +83,9 @@ namespace StackLab.Generators
             var stringBuilder = new StringBuilder();
             var resultList = new List<string>();
 
-            foreach (var value in valuesList)
+            foreach (var value in valuesList.Where(value => !int.TryParse(value, out _)))
             {
-                if (!int.TryParse(value, out _))
-                {
-                    variables.Add(value);
-                }
+                variables.Add(value);
             }
 
             foreach (var variable in variables)
