@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using StackLab.Generators;
+using StackLab.Interfaces;
 using StackLab.Interpreters;
 
 namespace StackLab
@@ -11,13 +12,23 @@ namespace StackLab
     {
         private static void Main()
         {
-            const int count = 15;
             var path = $"C:/Users/{Environment.UserName}/Desktop/";
-            var itemCountList = GetItemCountList(count, 1000);
-            var paths = GenerationResultWriter.WriteResults(path, new Generator(), itemCountList);
+            // RunInterpreter(path, 15, "input", new Generator(), new Interpreter());
+            RunInterpreter(path, 1, "operations", new GeneratorOperations(), new InterpreterOperations());
+        }
+
+        private static void RunInterpreter(string path,
+                                           int count,
+                                           string prefix,
+                                           IGenerator generator,
+                                           IInterpreter<string> interpreter)
+        {
+            var itemCountList = GetItemCountList(count, 100);
+            var paths = GenerationResultWriter.WriteResults(path, prefix, generator, itemCountList);
+
             using (var resultOutput = new FileStream(path + "result.txt", FileMode.Create, FileAccess.Write))
             {
-                Benchmark.Run(paths, new Interpreter(), Console.OpenStandardOutput(), resultOutput);
+                Benchmark.Run(paths, interpreter, 5, Console.OpenStandardOutput(), resultOutput);
             }
         }
 

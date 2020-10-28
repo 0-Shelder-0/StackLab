@@ -9,6 +9,21 @@ namespace StackLab.Interpreters
 {
     public class Interpreter : IInterpreter<string>
     {
+        private readonly Dictionary<string, Func<IStack<string>, string, string>> _dictionaryFunc =
+            new Dictionary<string, Func<IStack<string>, string, string>>
+            {
+                ["1"] = (stack, command) =>
+                        {
+                            var value = command.Split(',').LastOrDefault();
+                            stack.Push(value);
+                            return $"Push: {value}";
+                        },
+                ["2"] = (stack, command) => $"Pop: {stack.Pop()}",
+                ["3"] = (stack, command) => $"Top: {stack.Top()}",
+                ["4"] = (stack, command) => $"IsEmpty: {stack.IsEmpty().ToString()}",
+                ["5"] = (stack, command) => $"Print: {stack.Print()}"
+            };
+
         public string Run(Stream input, IStack<string> stack)
         {
             var strBuilder = new StringBuilder();
@@ -27,21 +42,6 @@ namespace StackLab.Interpreters
             }
             return strBuilder.ToString();
         }
-
-        private readonly Dictionary<string, Func<IStack<string>, string, string>> _dictionaryFunc =
-            new Dictionary<string, Func<IStack<string>, string, string>>
-            {
-                ["1"] = (stack, command) =>
-                        {
-                            var value = command.Split(',').LastOrDefault();
-                            stack.Push(value);
-                            return $"Push: {value}";
-                        },
-                ["2"] = (stack, command) => $"Pop: {stack.Pop()}",
-                ["3"] = (stack, command) => $"Top: {stack.Top()}",
-                ["4"] = (stack, command) => $"IsEmpty: {stack.IsEmpty().ToString()}",
-                ["5"] = (stack, command) => $"Print: {stack.Print()}"
-            };
 
         private static string[] GetCommands(byte[] bytes)
         {

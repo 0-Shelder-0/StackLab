@@ -9,7 +9,6 @@ namespace StackLab.Generators
     {
         private readonly Dictionary<int, string> _funcDictionary = new Dictionary<int, string>
         {
-            //+, -, *, :, ^, ln, cos, sin, sqrt
             [1] = "+",
             [2] = "-",
             [3] = "*",
@@ -46,8 +45,9 @@ namespace StackLab.Generators
             for (var i = 0; i < operationCount; i++)
             {
                 var numberValue = rnd.Next(1, 3);
-                valuesList.Add(
-                    numberValue == 1 ? ((char) rnd.Next(65, 126)).ToString() : (rnd.Next(1, 1000)).ToString());
+                valuesList.Add(numberValue == 1
+                                   ? ((char) rnd.Next(97, 123)).ToString()
+                                   : rnd.Next(1, 100).ToString());
             }
 
             return valuesList;
@@ -58,9 +58,9 @@ namespace StackLab.Generators
             var resultString = new StringBuilder();
             for (var i = 0; i < valuesList.Count; i++)
             {
-                resultString.Append(i != valuesList.Count - 1
-                                        ? $"{valuesList[i]}{_funcDictionary[rnd.Next(1, 10)]}"
-                                        : $"{valuesList[i]}");
+                resultString.Append(i == valuesList.Count - 1
+                                        ? $"{valuesList[i]}"
+                                        : $"{valuesList[i]}{_funcDictionary[rnd.Next(1, 10)]}");
             }
 
             return resultString.ToString();
@@ -69,6 +69,8 @@ namespace StackLab.Generators
         private List<string> GenerateVariablesValues(Random rnd, List<string> valuesList)
         {
             var variables = new HashSet<string>();
+            var stringBuilder = new StringBuilder();
+            var resultList = new List<string>();
 
             foreach (var value in valuesList)
             {
@@ -78,12 +80,9 @@ namespace StackLab.Generators
                 }
             }
 
-            var stringBuilder = new StringBuilder();
-            var resultList = new List<string>();
-
             foreach (var variable in variables)
             {
-                stringBuilder.Append($"{variable}={rnd.Next(1, 1000)}");
+                stringBuilder.Append($"{variable}={rnd.Next(1, 100)}");
                 resultList.Add(stringBuilder.ToString());
                 stringBuilder.Clear();
             }

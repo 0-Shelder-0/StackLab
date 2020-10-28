@@ -7,21 +7,25 @@ namespace StackLab
 {
     public static class Measurer
     {
-        public static TimeSpan Measure(Stream input, Stream output, IInterpreter<string> interpreter)
+        public static double Measure(Stream input,
+                                       Stream output,
+                                       IInterpreter<string> interpreter,
+                                       int repeatNumber)
         {
             var stopwatch = new Stopwatch();
             var result = string.Empty;
 
-            stopwatch.Start();
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < repeatNumber; i++)
             {
+                stopwatch.Start();
                 result = interpreter.Run(input, new Stack<string>());
+                stopwatch.Stop();
+                input.Seek(0, SeekOrigin.Begin);
             }
-            stopwatch.Stop();
 
             output.StreamWrite(result);
 
-            return stopwatch.Elapsed / 3;
+            return stopwatch.Elapsed.TotalMilliseconds / repeatNumber;
         }
     }
 }

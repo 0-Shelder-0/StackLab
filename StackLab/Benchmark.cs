@@ -8,6 +8,7 @@ namespace StackLab
     {
         public static void Run(IEnumerable<string> paths,
                                IInterpreter<string> interpreter,
+                               int repeatNumber,
                                Stream programOutput,
                                FileStream resultOutput)
         {
@@ -15,8 +16,8 @@ namespace StackLab
             {
                 using (var input = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
-                    var timeSpan = Measurer.Measure(input, programOutput, interpreter);
-                    resultOutput.StreamWriteLine($"{path}: {timeSpan}");
+                    var milliseconds = Measurer.Measure(input, programOutput, interpreter, repeatNumber);
+                    resultOutput.StreamWriteLine($"{path}: {milliseconds} ms");
                 }
             }
         }
