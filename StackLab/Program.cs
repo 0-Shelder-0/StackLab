@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using StackLab.Generators;
 using StackLab.Interfaces;
 using StackLab.Interpreters;
@@ -23,7 +24,7 @@ namespace StackLab
                                            IGenerator generator,
                                            IInterpreter<string> interpreter)
         {
-            var itemCountList = GetItemCountList(count, 100);
+            var itemCountList = GetItemCountList(count, 10);
             var paths = GenerationResultWriter.WriteResults(path, prefix, generator, itemCountList);
 
             using (var resultOutput = new FileStream(path + "result.txt", FileMode.Create, FileAccess.Write))
