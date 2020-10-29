@@ -12,7 +12,7 @@ namespace StackLab
                                      int repeatNumber)
         {
             var stopwatch = new Stopwatch();
-            var result = string.Empty;
+            var result = interpreter.Run(input, new Stack<string>());
 
             for (var i = 0; i < repeatNumber; i++)
             {

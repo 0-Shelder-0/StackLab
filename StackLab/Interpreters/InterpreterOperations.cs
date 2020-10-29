@@ -60,12 +60,11 @@ namespace StackLab.Interpreters
             var bytes = new byte[input.Length];
             input.Read(bytes);
             var program = GetCommands(bytes);
-            var expr = program.FirstOrDefault();
-            var tokens = Regex.Matches(expr, GetPattern(exprContentTokens))
-                              .Select(match => match.Value)
-                              .ToList();
-            SubstitutionNumbers(program.Skip(1), tokens);
-            var postfixRecord = SortingYardAlgorithm(tokens, stack);
+            var expression = program.FirstOrDefault();
+            var tokens = Regex.Matches(expression, GetPattern(exprContentTokens))
+                              .Select(match => match.Value);
+            var record = SubstituteVariables(program.Skip(1), tokens);
+            var postfixRecord = SortingYardAlgorithm(record, stack);
             return postfixRecord;
         }
 
@@ -148,8 +147,8 @@ namespace StackLab.Interpreters
             return postfixRecord;
         }
 
-        private void SubstitutionNumbers(IEnumerable<string> variables,
-                                         List<string> tokens)
+        private IEnumerable<string> SubstituteVariables(IEnumerable<string> variables,
+                                                        IEnumerable<string> tokens)
         {
             var dict = new Dictionary<string, int>();
             foreach (var variable in variables.Where(line => line.Length > 0))
@@ -162,12 +161,9 @@ namespace StackLab.Interpreters
                     dict[line[0]] = int.Parse(line[1]);
                 }
             }
-            for (var i = 0; i < tokens.Count; i++)
+            foreach (var token in tokens.Where(token => dict.ContainsKey(token)))
             {
-                if (dict.ContainsKey(tokens[i]))
-                {
-                    tokens[i] = dict[tokens[i]].ToString();
-                }
+                yield return dict[token].ToString();
             }
         }
 
@@ -198,7 +194,7 @@ namespace StackLab.Interpreters
             return Encoding.Default
                            .GetString(bytes)
                            .Split()
-                           .Where(x => x.Length > 0)
+                           .Where(line => line.Length > 0)
                            .ToArray();
         }
     }
