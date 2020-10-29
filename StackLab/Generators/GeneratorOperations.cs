@@ -59,7 +59,7 @@ namespace StackLab.Generators
             var resultString = new StringBuilder();
             for (var i = 0; i < valuesList.Count; i++)
             {
-                var levelFunc = rnd.Next(1, 3); // 1 - complete, 2 - simple
+                var levelFunc = rnd.Next(1, 5); // 1 - complex, 2-4 - simple
                 if (levelFunc == 1)
                 {
                     resultString.Append(i != valuesList.Count - 1

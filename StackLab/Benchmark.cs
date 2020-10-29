@@ -6,7 +6,7 @@ namespace StackLab
 {
     public static class Benchmark
     {
-        public static void Run(IEnumerable<string> paths,
+        public static void Run(IEnumerable<FilePath> paths,
                                IInterpreter<string> interpreter,
                                int repeatNumber,
                                Stream programOutput,
@@ -14,10 +14,10 @@ namespace StackLab
         {
             foreach (var path in paths)
             {
-                using (var input = new FileStream(path, FileMode.Open, FileAccess.Read))
+                using (var input = new FileStream(path.FullPath, FileMode.Open, FileAccess.Read))
                 {
                     var milliseconds = Measurer.Measure(input, programOutput, interpreter, repeatNumber);
-                    resultOutput.StreamWriteLine($"{path}: {milliseconds} ms");
+                    resultOutput.StreamWriteLine($"{path.Name}: {milliseconds} ms");
                 }
             }
         }

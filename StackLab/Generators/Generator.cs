@@ -48,7 +48,7 @@ namespace StackLab.Generators
             var length = rnd.Next(1, 10);
             for (var i = 0; i < length; i++)
             {
-                stringBuilder.Append((char) rnd.Next(48, 126));
+                stringBuilder.Append((char) rnd.Next(97, 123));
             }
             return stringBuilder.ToString();
         }

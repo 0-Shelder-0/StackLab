@@ -1,6 +1,5 @@
-using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using StackLab.Interfaces;
 
 namespace StackLab
@@ -8,9 +7,9 @@ namespace StackLab
     public static class Measurer
     {
         public static double Measure(Stream input,
-                                       Stream output,
-                                       IInterpreter<string> interpreter,
-                                       int repeatNumber)
+                                     Stream output,
+                                     IInterpreter<string> interpreter,
+                                     int repeatNumber)
         {
             var stopwatch = new Stopwatch();
             var result = string.Empty;
@@ -23,7 +22,7 @@ namespace StackLab
                 input.Seek(0, SeekOrigin.Begin);
             }
 
-            output.StreamWrite(result);
+            output.StreamWriteLine(result);
 
             return stopwatch.Elapsed.TotalMilliseconds / repeatNumber;
         }

@@ -18,10 +18,10 @@ namespace StackLab.Interpreters
             ["*"] = 2,
             [":"] = 2,
             ["^"] = 3,
-            ["ln"] = 3,
-            ["sin"] = 3,
-            ["cos"] = 3,
-            ["sqrt"] = 3
+            ["ln"] = 4,
+            ["sin"] = 4,
+            ["cos"] = 4,
+            ["sqrt"] = 4
         };
         private readonly Dictionary<string, Func<double, double, double>> _arithmeticOperations =
             new Dictionary<string, Func<double, double, double>>
@@ -43,7 +43,7 @@ namespace StackLab.Interpreters
         private readonly List<string> _values = new List<string>
         {
             @"\d+",
-            @"\w"
+            @"\w+"
         };
 
         public string Run(Stream input, IStack<string> stack)
@@ -53,9 +53,9 @@ namespace StackLab.Interpreters
             return result;
         }
 
-        private List<string> GetPostfixRecord(Stream input,
-                                              IStack<string> stack,
-                                              IEnumerable<string> exprContentTokens)
+        private IEnumerable<string> GetPostfixRecord(Stream input,
+                                                     IStack<string> stack,
+                                                     IEnumerable<string> exprContentTokens)
         {
             var bytes = new byte[input.Length];
             input.Read(bytes);
@@ -65,9 +65,8 @@ namespace StackLab.Interpreters
                               .Select(match => match.Value)
                               .ToList();
             SubstitutionNumbers(program.Skip(1), tokens);
-            var postfix = SortingYardAlgorithm(tokens, stack);
-
-            return postfix;
+            var postfixRecord = SortingYardAlgorithm(tokens, stack);
+            return postfixRecord;
         }
 
         private string ComputeExpression(IStack<string> stack, IEnumerable<string> tokens)
@@ -80,36 +79,56 @@ namespace StackLab.Interpreters
                 }
                 else if (_arithmeticOperations.ContainsKey(token))
                 {
-                    var value = _arithmeticOperations[token](StackPop(stack), StackPop(stack));
-                    stack.Push(value.ToString(CultureInfo.InvariantCulture));
+                    var firstArg = StackPop(stack);
+                    var secondArg = StackPop(stack);
+                    var value = _arithmeticOperations[token](firstArg, secondArg);
+                    if (!IsCorrectResult(new[] {firstArg, secondArg}, value, token, stack)) break;
+                    stack.Push(ToString(value));
                 }
                 else if (_mathsOperations.ContainsKey(token))
                 {
-                    var value = _mathsOperations[token](StackPop(stack));
-                    stack.Push(value.ToString(CultureInfo.InvariantCulture));
+                    var arg = StackPop(stack);
+                    var value = _mathsOperations[token](arg);
+                    if (!IsCorrectResult(new[] {arg}, value, token, stack)) break;
+                    stack.Push(ToString(value));
                 }
                 else
                 {
-                    throw new Exception($"Unexpected token: {token}");
+                    stack.Push($"Unexpected token: {token}");
+                    break;
                 }
             }
             return stack.Pop();
         }
 
-        private static double StackPop(IStack<string> stack)
+        private bool IsCorrectResult(double[] args, double value, string token, IStack<string> stack)
         {
-            return double.Parse(stack.Pop(), CultureInfo.InvariantCulture);
+            if (double.IsNaN(value))
+            {
+                switch (args.Length)
+                {
+                    case 1:
+                        stack.Push($"Unexpected operation: {token}{ToString(args[0])}");
+                        break;
+                    case 2:
+                        stack.Push(
+                            $"Unexpected operation: {ToString(args[1])}{token}{ToString(args[0])}");
+                        break;
+                }
+                return false;
+            }
+            return true;
         }
 
-        private List<string> SortingYardAlgorithm(IEnumerable<string> tokens,
-                                                  IStack<string> stack)
+        private IEnumerable<string> SortingYardAlgorithm(IEnumerable<string> tokens,
+                                                         IStack<string> stack)
         {
-            var postfixList = new List<string>();
+            var postfixRecord = new List<string>();
             foreach (var token in tokens)
             {
                 if (Regex.IsMatch(token, @"\d+"))
                 {
-                    postfixList.Add(token);
+                    postfixRecord.Add(token);
                 }
                 if (_operationPriority.ContainsKey(token))
                 {
@@ -117,16 +136,16 @@ namespace StackLab.Interpreters
                            _operationPriority.ContainsKey(stack.Top()) &&
                            _operationPriority[stack.Top()] >= _operationPriority[token])
                     {
-                        postfixList.Add(stack.Pop());
+                        postfixRecord.Add(stack.Pop());
                     }
                     stack.Push(token);
                 }
             }
             while (!stack.IsEmpty())
             {
-                postfixList.Add(stack.Pop());
+                postfixRecord.Add(stack.Pop());
             }
-            return postfixList;
+            return postfixRecord;
         }
 
         private void SubstitutionNumbers(IEnumerable<string> variables,
@@ -158,10 +177,20 @@ namespace StackLab.Interpreters
             foreach (var token in tokens)
             {
                 pattern.Append(token.Length == 1
-                                   ? '\\' + token + '|'
-                                   : token + '|');
+                                   ? $"\\{token}|"
+                                   : $"{token}|");
             }
             return pattern.ToString().TrimEnd('|');
+        }
+
+        private static string ToString(double value)
+        {
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static double StackPop(IStack<string> stack)
+        {
+            return double.Parse(stack.Pop(), CultureInfo.InvariantCulture);
         }
 
         private string[] GetCommands(byte[] bytes)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using StackLab.Generators;
 using StackLab.Interfaces;
 using StackLab.Interpreters;
@@ -13,21 +12,24 @@ namespace StackLab
     {
         private static void Main()
         {
-            var path = $"C:/Users/{Environment.UserName}/Desktop/";
-            // RunInterpreter(path, 15, "input", new Generator(), new Interpreter());
-            RunInterpreter(path, 1, "operations", new GeneratorOperations(), new InterpreterOperations());
+            var testsFile = new FilePath($"C:/Users/{Environment.UserName}/Desktop/Tests", "test.txt");
+            var resultFile = new FilePath($"C:/Users/{Environment.UserName}/Desktop/Results", "result.txt");
+            RunInterpreter(testsFile, resultFile, 15, new Generator(), new Interpreter());
+            // RunInterpreter(testsFile, resultFile, 15, new GeneratorOperations(), new InterpreterOperations());
         }
 
-        private static void RunInterpreter(string path,
+        private static void RunInterpreter(FilePath testFilePath,
+                                           FilePath resultFilePath,
                                            int count,
-                                           string prefix,
                                            IGenerator generator,
                                            IInterpreter<string> interpreter)
         {
+            Directory.CreateDirectory(testFilePath.DirectoryPath);
+            Directory.CreateDirectory(resultFilePath.DirectoryPath);
             var itemCountList = GetItemCountList(count, 10);
-            var paths = GenerationResultWriter.WriteResults(path, prefix, generator, itemCountList);
+            var paths = GenerationResultWriter.WriteResults(testFilePath, generator, itemCountList);
 
-            using (var resultOutput = new FileStream(path + "result.txt", FileMode.Create, FileAccess.Write))
+            using (var resultOutput = new FileStream(resultFilePath.FullPath, FileMode.Create, FileAccess.Write))
             {
                 Benchmark.Run(paths, interpreter, 5, Console.OpenStandardOutput(), resultOutput);
             }
