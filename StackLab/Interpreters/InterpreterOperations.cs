@@ -40,17 +40,26 @@ namespace StackLab.Interpreters
                 ["cos"] = Math.Cos,
                 ["sqrt"] = Math.Sqrt
             };
-        private readonly List<string> _values = new List<string>
+        private readonly List<string> _exprContent = new List<string>
         {
+            "(",
+            ")",
             @"\d+",
-            @"\w"
+            @"[a-zA-Z]+"
         };
 
         public string Run(Stream input, IStack<string> stack)
         {
-            var tokens = GetPostfixRecord(input, stack, _operationPriority.Keys.Concat(_values));
-            var result = ComputeExpression(stack, tokens);
-            return result;
+            try
+            {
+                var tokens = GetPostfixRecord(input, stack, _operationPriority.Keys.Concat(_exprContent));
+                var result = ComputeExpression(stack, tokens);
+                return result;
+            }
+            catch (Exception exception)
+            {
+                return exception.Message;
+            }
         }
 
         private IEnumerable<string> GetPostfixRecord(Stream input,
@@ -78,49 +87,52 @@ namespace StackLab.Interpreters
                 }
                 else if (_arithmeticOperations.ContainsKey(token))
                 {
-                    var firstArg = StackPop(stack);
-                    var secondArg = StackPop(stack);
-                    var value = _arithmeticOperations[token](firstArg, secondArg);
-                    if (!IsCorrectResult(new[] {firstArg, secondArg}, value, token, stack)) break;
-                    stack.Push(ToString(value));
+                    ArithmeticOperationActions(stack, token);
                 }
                 else if (_mathsOperations.ContainsKey(token))
                 {
-                    var arg = StackPop(stack);
-                    var value = _mathsOperations[token](arg);
-                    if (!IsCorrectResult(new[] {arg}, value, token, stack)) break;
-                    stack.Push(ToString(value));
+                    MathsOperationActions(stack, token);
                 }
                 else
                 {
-                    stack.Push($"Unexpected token: {token}");
-                    break;
+                    throw new Exception($"Unexpected token: {token}");
                 }
             }
             return stack.Pop();
         }
 
-        private bool IsCorrectResult(double[] args, double value, string token, IStack<string> stack)
+        private void ArithmeticOperationActions(IStack<string> stack, string token)
+        {
+            var firstArg = StackPop(stack);
+            var secondArg = StackPop(stack);
+            var value = _arithmeticOperations[token](firstArg, secondArg);
+            stack.Push(ToString(value));
+            IsCorrectResult(new[] {firstArg, secondArg}, value, token);
+        }
+
+        private void MathsOperationActions(IStack<string> stack, string token)
+        {
+            var arg = StackPop(stack);
+            var value = _mathsOperations[token](arg);
+            stack.Push(ToString(value));
+            IsCorrectResult(new[] {arg}, value, token);
+        }
+
+        private void IsCorrectResult(double[] args, double value, string token)
         {
             if (double.IsNaN(value))
             {
                 switch (args.Length)
                 {
                     case 1:
-                        stack.Push($"Unexpected operation: {token}{ToString(args[0])}");
-                        break;
+                        throw new Exception($"Unexpected operation: {token}{ToString(args[0])}");
                     case 2:
-                        stack.Push(
-                            $"Unexpected operation: {ToString(args[1])}{token}{ToString(args[0])}");
-                        break;
+                        throw new Exception($"Unexpected operation: {ToString(args[1])}{token}{ToString(args[0])}");
                 }
-                return false;
             }
-            return true;
         }
 
-        private IEnumerable<string> SortingYardAlgorithm(IEnumerable<string> tokens,
-                                                         IStack<string> stack)
+        private IEnumerable<string> SortingYardAlgorithm(IEnumerable<string> tokens, IStack<string> stack)
         {
             var postfixRecord = new List<string>();
             foreach (var token in tokens)
@@ -129,15 +141,21 @@ namespace StackLab.Interpreters
                 {
                     postfixRecord.Add(token);
                 }
-                if (_operationPriority.ContainsKey(token))
+                else if (token.Equals("("))
                 {
-                    while (!stack.IsEmpty() &&
-                           _operationPriority.ContainsKey(stack.Top()) &&
-                           _operationPriority[stack.Top()] >= _operationPriority[token])
-                    {
-                        postfixRecord.Add(stack.Pop());
-                    }
                     stack.Push(token);
+                }
+                else if (token.Equals(")"))
+                {
+                    ClosingBracketActions(stack, postfixRecord);
+                }
+                else if (_operationPriority.ContainsKey(token))
+                {
+                    OperatorActions(stack, token, postfixRecord);
+                }
+                else
+                {
+                    throw new Exception($"Unexpected token: {token}");
                 }
             }
             while (!stack.IsEmpty())
@@ -147,25 +165,52 @@ namespace StackLab.Interpreters
             return postfixRecord;
         }
 
-        private IEnumerable<string> SubstituteVariables(IEnumerable<string> variables,
-                                                        IEnumerable<string> tokens)
+        private void ClosingBracketActions(IStack<string> stack, List<string> postfixRecord)
         {
-            var dict = new Dictionary<string, int>();
+            var top = stack.Pop();
+            while (!stack.IsEmpty() && !top.Equals("("))
+            {
+                postfixRecord.Add(top);
+                top = stack.Pop();
+            }
+            if (!top.Equals("("))
+            {
+                throw new Exception("Missing closing bracket");
+            }
+        }
+
+        private void OperatorActions(IStack<string> stack, string token, List<string> postfixRecord)
+        {
+            while (!stack.IsEmpty() &&
+                   !stack.Top().Equals("(") &&
+                   _operationPriority.ContainsKey(stack.Top()) &&
+                   _operationPriority[stack.Top()] >= _operationPriority[token])
+            {
+                postfixRecord.Add(stack.Pop());
+            }
+            stack.Push(token);
+        }
+
+        private IEnumerable<string> SubstituteVariables(IEnumerable<string> variables, IEnumerable<string> tokens)
+        {
+            var dict = new Dictionary<string, double>();
             foreach (var variable in variables.Where(line => line.Length > 0))
             {
-                var line = variable.Split('=')
+                var line = variable.Split('=', ' ', '\t')
                                    .Where(item => item.Length > 0)
                                    .ToList();
-                if (line.Count == 2 && Regex.IsMatch(line[0], @"\w+") && Regex.IsMatch(line[1], @"\d+"))
+                if (line.Count == 2 &&
+                    Regex.IsMatch(line[0], @"^[a-zA-Z]+$") &&
+                    Regex.IsMatch(line[1], @"^\d+$"))
                 {
-                    dict[line[0]] = int.Parse(line[1]);
+                    dict[line[0]] = double.Parse(line[1]);
                 }
             }
             foreach (var token in tokens)
             {
                 if (dict.ContainsKey(token))
                 {
-                    yield return dict[token].ToString();
+                    yield return ToString(dict[token]);
                 }
                 else
                 {
@@ -200,7 +245,7 @@ namespace StackLab.Interpreters
         {
             return Encoding.Default
                            .GetString(bytes)
-                           .Split()
+                           .Split('\r', '\n')
                            .Where(line => line.Length > 0)
                            .ToArray();
         }

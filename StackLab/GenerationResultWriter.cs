@@ -16,8 +16,7 @@ namespace StackLab
             {
                 numberFile++;
                 var filePath = new FilePath(resultFilePath.DirectoryPath, $"{numberFile}_{resultFilePath.Name}");
-                using (var stream =
-                    new FileStream(filePath.FullPath, FileMode.Create, FileAccess.Write))
+                using (var stream = new FileStream(filePath.FullPath, FileMode.Create, FileAccess.Write))
                 {
                     stream.StreamWrite(generator.Generate(item));
                 }

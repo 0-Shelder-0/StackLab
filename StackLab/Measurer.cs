@@ -21,7 +21,6 @@ namespace StackLab
                 stopwatch.Stop();
                 input.Seek(0, SeekOrigin.Begin);
             }
-
             output.StreamWriteLine(result);
 
             return stopwatch.Elapsed.TotalMilliseconds / repeatNumber;

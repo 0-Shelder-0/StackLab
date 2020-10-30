@@ -56,25 +56,61 @@ namespace StackLab.Generators
 
         private string GenerateOperationsString(Random rnd, List<string> valuesList)
         {
-            var resultString = new StringBuilder();
+            var strBuilder = new StringBuilder();
             for (var i = 0; i < valuesList.Count; i++)
             {
                 var levelFunc = rnd.Next(1, 5); // 1 - complex, 2-4 - simple
+                var openB = rnd.Next(1, 4) == 1 ? "(" : string.Empty;
+                var closeB = rnd.Next(1, 4) == 1 ? ")" : string.Empty;
+                var mathOperation = _funcDictionary[rnd.Next(6, 10)];
+                var arOperation = _funcDictionary[rnd.Next(1, 6)];
                 if (levelFunc == 1)
                 {
-                    resultString.Append(i != valuesList.Count - 1
-                                            ? $"{_funcDictionary[rnd.Next(6, 10)]}{valuesList[i]}{_funcDictionary[rnd.Next(1, 6)]}"
-                                            : $"{_funcDictionary[rnd.Next(6, 10)]}{valuesList[i]}");
+                    strBuilder.Append(i != valuesList.Count - 1
+                                          ? $"{mathOperation}{valuesList[i]}{closeB}{arOperation}{openB}"
+                                          : $"{mathOperation}{valuesList[i]}");
                 }
                 else
                 {
-                    resultString.Append(i != valuesList.Count - 1
-                                            ? $"{valuesList[i]}{_funcDictionary[rnd.Next(1, 6)]}"
-                                            : $"{valuesList[i]}");
+                    strBuilder.Append(i != valuesList.Count - 1
+                                          ? $"{valuesList[i]}{closeB}{arOperation}{openB}"
+                                          : $"{valuesList[i]}");
                 }
             }
+            var resultString = AddBrackets(strBuilder.ToString(), 0, 1);
+            resultString = AddBrackets(resultString, resultString.Length - 1, -1);
+            return resultString;
+        }
 
-            return resultString.ToString();
+        private string AddBrackets(string line, int start, int step)
+        {
+            if (step == 0)
+            {
+                return line;
+            }
+            var stack = new Stack<char>();
+            var firstB = step > 0 ? '(' : ')';
+            var secondB = step > 0 ? ')' : '(';
+            for (var i = start; i < line.Length && i >= 0; i += step)
+            {
+                if (line[i].Equals(firstB))
+                {
+                    stack.Push(line[i]);
+                }
+                else if (line[i].Equals(secondB))
+                {
+                    stack.Pop();
+                }
+            }
+            var count = 0;
+            while (!stack.IsEmpty())
+            {
+                count++;
+                stack.Pop();
+            }
+            return step > 0
+                       ? line.PadRight(line.Length + count, secondB)
+                       : line.PadLeft(line.Length + count, secondB);
         }
 
         private List<string> GenerateVariablesValues(Random rnd, List<string> valuesList)
