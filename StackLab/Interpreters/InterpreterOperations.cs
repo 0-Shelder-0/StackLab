@@ -43,7 +43,7 @@ namespace StackLab.Interpreters
         private readonly List<string> _values = new List<string>
         {
             @"\d+",
-            @"\w+"
+            @"\w"
         };
 
         public string Run(Stream input, IStack<string> stack)
@@ -161,9 +161,16 @@ namespace StackLab.Interpreters
                     dict[line[0]] = int.Parse(line[1]);
                 }
             }
-            foreach (var token in tokens.Where(token => dict.ContainsKey(token)))
+            foreach (var token in tokens)
             {
-                yield return dict[token].ToString();
+                if (dict.ContainsKey(token))
+                {
+                    yield return dict[token].ToString();
+                }
+                else
+                {
+                    yield return token;
+                }
             }
         }
 
