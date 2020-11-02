@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using StackLab.Interfaces;
 
 namespace StackLab
@@ -17,7 +19,7 @@ namespace StackLab
             for (var i = 0; i < repeatNumber; i++)
             {
                 stopwatch.Start();
-                result = interpreter.Run(input, new Stack<string>());
+                interpreter.Run(input, new Stack<string>());
                 stopwatch.Stop();
                 input.Seek(0, SeekOrigin.Begin);
             }

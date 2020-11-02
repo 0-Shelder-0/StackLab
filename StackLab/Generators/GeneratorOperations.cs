@@ -60,20 +60,19 @@ namespace StackLab.Generators
             for (var i = 0; i < valuesList.Count; i++)
             {
                 var levelFunc = rnd.Next(1, 5); // 1 - complex, 2-4 - simple
-                var openB = rnd.Next(1, 4) == 1 ? "(" : string.Empty;
-                var closeB = rnd.Next(1, 4) == 1 ? ")" : string.Empty;
+
                 var mathOperation = _funcDictionary[rnd.Next(6, 10)];
                 var arOperation = _funcDictionary[rnd.Next(1, 6)];
                 if (levelFunc == 1)
                 {
                     strBuilder.Append(i != valuesList.Count - 1
-                                          ? $"{mathOperation}{valuesList[i]}{closeB}{arOperation}{openB}"
-                                          : $"{mathOperation}{valuesList[i]}");
+                                          ? $"{mathOperation}({valuesList[i]}){arOperation}"
+                                          : $"{mathOperation}({valuesList[i]})");
                 }
                 else
                 {
                     strBuilder.Append(i != valuesList.Count - 1
-                                          ? $"{valuesList[i]}{closeB}{arOperation}{openB}"
+                                          ? $"{valuesList[i]}{arOperation}"
                                           : $"{valuesList[i]}");
                 }
             }

@@ -13,8 +13,9 @@ namespace StackLab
         private static void Main()
         {
             var testsFile = new FilePath($"C:/Users/{Environment.UserName}/Desktop/Tests", "test.txt");
-            var resultFile = new FilePath($"C:/Users/{Environment.UserName}/Desktop/Results", "result.txt");
-            // RunInterpreter(testsFile, resultFile, 5, 1000, new Generator(), new Interpreter());
+            var resultFile = new FilePath($"C:/Users/{Environment.UserName}/Desktop", "result.txt");
+            
+            RunInterpreter(testsFile, resultFile, 5, 1000, new Generator(), new Interpreter());
             RunInterpreter(testsFile, resultFile, 15, 10, new GeneratorOperations(), new InterpreterOperations());
         }
 
@@ -26,13 +27,12 @@ namespace StackLab
                                            IInterpreter<string> interpreter)
         {
             Directory.CreateDirectory(testFilePath.DirectoryPath);
-            Directory.CreateDirectory(resultFilePath.DirectoryPath);
             var itemCountList = GetItemCountList(count, step);
             var paths = GenerationResultWriter.WriteResults(testFilePath, generator, itemCountList);
 
             using (var resultOutput = new FileStream(resultFilePath.FullPath, FileMode.Create, FileAccess.Write))
             {
-                Benchmark.Run(paths, interpreter, 5, Console.OpenStandardOutput(), resultOutput);
+                Benchmark.Run(paths, interpreter, 10, Console.OpenStandardOutput(), resultOutput);
             }
         }
 
